@@ -9,6 +9,8 @@ import UIKit
 
 class ToDoListTableViewController: UITableViewController {
     
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     // MARK: - Properties
     // id
     struct PropertyKeys {
@@ -28,6 +30,9 @@ class ToDoListTableViewController: UITableViewController {
         
         // 編輯按鈕
         navigationItem.leftBarButtonItem = editButtonItem
+        
+        // 設置search代理
+        searchBar.delegate = self
         
         // 在編輯模式下允許用戶可以選擇特定的行來進行編輯
         // tableView.allowsSelectionDuringEditing = true
@@ -161,5 +166,31 @@ extension ToDoListTableViewController: ToDoListTableViewCellDelegate {
         
         // 重新加載 tableView 的特定行，以反映更改
         tableView.reloadRows(at: [indexPath], with: .automatic)
+    }
+}
+
+// Search的擴展
+extension ToDoListTableViewController: UISearchBarDelegate {
+    
+    // 當 searchBar 的 text 發生變化時，過濾待辦事項數據
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // 如果 searchBar 的文字為空，則顯示所有待辦事項；否則，顯示符合條件的待辦事項
+        if searchText.isEmpty {
+            toDoItems = ToDoItemManager.loadToDoItems() ?? ToDoItem.sampleData()
+        } else {
+            // 否則，過濾待辦事項列表以顯示只匹配搜索文本的項目
+            toDoItems = toDoItems.filter({ item in
+                // 檢查待辦事項的標題是否包含搜尋的文字
+                return item.title.lowercased().contains(searchText.lowercased())
+            })
+        }
+        
+        // 刷新表格以顯示新的選擇
+        tableView.reloadData()
+    }
+    
+    // 使用者點擊鍵盤上的“搜索”按鈕時調用
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.resignFirstResponder()    // 關閉鍵盤
     }
 }
