@@ -153,18 +153,22 @@ class ToDoListTableViewController: UITableViewController {
 
 // 實現協議中的方法。當 cell 中的按鈕被點擊時，這個方法會被調用。
 extension ToDoListTableViewController: ToDoListTableViewCellDelegate {
+    
     func didTapCheckmarkButton(in cell: ToDoListTableViewCell) {
         guard let indexPath = tableView.indexPath(for: cell) else { return }
         
         /// 獲取對應的待辦事項
         var toDoItem = toDoItems[indexPath.row]
-    
+        
         /// 更改事項的完成狀態
         toDoItem.isCompleted.toggle()
+        
         // 將更新後的事項存回陣列
         toDoItems[indexPath.row] = toDoItem
+        print("勾選更新：\(toDoItem.title) - isCompleted = \(toDoItem.isCompleted)")
         
-        // 重新加載 tableView 的特定行，以反映更改
+        // 即時儲存勾選狀態
+        ToDoItemManager.saveToDoItems(toDoItems)
         tableView.reloadRows(at: [indexPath], with: .automatic)
     }
 }
