@@ -172,17 +172,24 @@ extension ToDoListTableViewController: ToDoListTableViewCellDelegate {
 // Search的擴展
 extension ToDoListTableViewController: UISearchBarDelegate {
     
-    // 當 searchBar 的 text 發生變化時，過濾待辦事項數據
+    // 當 searchBar 的文字發生變化時，根據使用者輸入來過濾待辦事項清單
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        // 如果 searchBar 的文字為空，則顯示所有待辦事項；否則，顯示符合條件的待辦事項
+        print("輸入文字：\(searchText)")
+        
+        // 每次輸入時都重新從本地儲存載入完整資料（避免過濾過的資料再被過濾）
+        let allItems = ToDoItemManager.loadToDoItems() ?? ToDoItem.sampleData()
+        
+        // 判斷是否為空白搜尋（空字串時表示清除搜尋，顯示全部資料）
         if searchText.isEmpty {
-            toDoItems = ToDoItemManager.loadToDoItems() ?? ToDoItem.sampleData()
+            toDoItems = allItems
         } else {
-            // 否則，過濾待辦事項列表以顯示只匹配搜索文本的項目
-            toDoItems = toDoItems.filter({ item in
-                // 檢查待辦事項的標題是否包含搜尋的文字
-                return item.title.lowercased().contains(searchText.lowercased())
-            })
+            
+            // 使用 localizedCaseInsensitiveContains：支援中文、英文與不分大小寫搜尋
+            // 每次都針對完整資料來源進行比對，不會因為前一次搜尋導致資料遺失
+            toDoItems = allItems.filter { item in
+                print("比對項目：\(item.title)")
+                return item.title.localizedCaseInsensitiveContains(searchText)
+            }
         }
         
         // 刷新表格以顯示新的選擇
